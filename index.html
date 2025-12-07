@@ -1,142 +1,98 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <title>نظام حجز المدرج</title>
   <style>
-    body { font-family: Arial; padding:20px; background:#f4f4f4; text-align:right; }
-    form { background:#fff; padding:20px; border-radius:10px; margin-bottom:25px;
-           box-shadow:0 0 10px rgba(0,0,0,0.1); max-width:420px; }
+    body { font-family: Arial, sans-serif; padding:20px; background:#f4f4f4; text-align:right; }
+    .card { background:#fff; padding:20px; border-radius:10px; margin-bottom:20px; max-width:600px; box-shadow:0 0 10px rgba(0,0,0,0.08); }
     label { display:block; margin-top:10px; }
-    input,button { width:100%; padding:8px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+    input, button { width:100%; padding:8px; margin-top:5px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box; }
     button { background:#0078d4; color:#fff; font-weight:bold; cursor:pointer; margin-top:15px; }
-    #resultsBox { background:#fff; padding:15px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); max-width:420px; }
+    .small { max-width:420px; }
   </style>
 </head>
 <body>
+  <h2>نظام حجز المدرج</h2>
 
-<h2>نظام حجز المدرج</h2>
+  <!-- Booking form: sends POST directly to Google Apps Script Web App -->
+  <div class="card small">
+    <form id="bookingForm" method="post" action="https://script.google.com/macros/s/AKfycbz5onjPbFDQLtasvlQUPEy2hDNUgYA2eH0A3Oaz3y3N1hnuTZdXhZQzrx_Hie-QxXJH/exec">
+      <label>تاريخ بداية الفعالية:</label>
+      <input type="date" name="startDate" id="startDate" required />
 
-<form id="bookingForm">
-  <label>تاريخ بداية الفعالية:</label>
-  <input type="date" id="startDate" required />
-  <div id="dayDisplay" style="margin-top:8px;font-weight:bold;color:#0078d4;"></div>
+      <div id="dayDisplay" style="margin-top:8px;font-weight:bold;color:#0078d4;"></div>
+      <input type="hidden" name="day" id="day" />
 
-  <label>تاريخ نهاية الفعالية:</label>
-  <input type="date" id="endDate" required />
+      <label>تاريخ نهاية الفعالية:</label>
+      <input type="date" name="endDate" id="endDate" required />
 
-  <label>وقت بداية الفعالية:</label>
-  <input type="time" id="startTime" required />
+      <label>وقت بداية الفعالية:</label>
+      <input type="time" name="startTime" id="startTime" required />
 
-  <label>وقت نهاية الفعالية:</label>
-  <input type="time" id="endTime" required />
+      <label>وقت نهاية الفعالية:</label>
+      <input type="time" name="endTime" id="endTime" required />
 
-  <label>اسم الفعالية:</label>
-  <input type="text" id="eventName" required />
+      <label>اسم الفعالية:</label>
+      <input type="text" name="eventName" id="eventName" required />
 
-  <label>رمز التحقق:</label>
-  <input type="password" id="passcode" required placeholder="أدخل رمز الحجز" />
+      <label>رمز التحقق:</label>
+      <input type="password" name="passcode" id="passcode" required placeholder="أدخل رمز التحقق" />
 
-  <button type="submit">تنفيذ الحجز</button>
-</form>
+      <button type="submit">تنفيذ الحجز</button>
+    </form>
+  </div>
 
-<form id="queryForm">
-  <h3>استعلام عن الحجوزات</h3>
+  <!-- Query form: sends GET to the same Web App -->
+  <div class="card small">
+    <form id="queryForm" method="get" action="https://script.google.com/macros/s/AKfycbz5onjPbFDQLtasvlQUPEy2hDNUgYA2eH0A3Oaz3y3N1hnuTZdXhZQzrx_Hie-QxXJH/exec">
+      <h3>استعلام عن الحجوزات</h3>
+      <label>أدخل تاريخ البحث:</label>
+      <input type="date" name="date" id="queryDate" required />
 
-  <label>أدخل تاريخ البحث:</label>
-  <input type="date" id="queryDate" required />
+      <label>رمز التحقق:</label>
+      <input type="password" name="passcode" id="queryPasscode" required placeholder="أدخل رمز التحقق" />
 
-  <label>رمز التحقق:</label>
-  <input type="password" id="queryCode" required placeholder="أدخل رمز التحقق" />
+      <button type="submit">بحث</button>
+    </form>
+  </div>
 
-  <button type="submit">بحث</button>
-</form>
-
-<div id="resultsBox"></div>
+  <p style="max-width:600px">ملاحظات: بعد الضغط على "تنفيذ الحجز" ستنتقل لصفحة تأكيد ناتجة من Google Apps Script ثم تُعاد إلى صفحة الحجز أو يمكنك الضغط على الرابط للعودة.</p>
 
 <script>
-const MASTER_CODE = "12345"; 
-const API_URL = "https://script.google.com/macros/s/AKfycbwg5eU9FQY2UQ29wGNzr_tSNEhVjqZoXqnLsE1vf-9E3ku2tP2LSz4cllsuuqbzLDpo/exec";
-
-document.getElementById("startDate").addEventListener("change", () => {
-    const d = new Date(document.getElementById("startDate").value);
-    const days = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
-    document.getElementById("dayDisplay").innerText = "اليوم: " + days[d.getDay()];
-});
-
-document.getElementById("bookingForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  if (document.getElementById("passcode").value !== MASTER_CODE) {
-    alert("❌ رمز التحقق غير صحيح");
-    return;
+  // Compute Arabic day name and fill hidden input
+  function computeDayFromDateValue(dateValue){
+    if(!dateValue) return "";
+    const d = new Date(dateValue + "T00:00:00");
+    const names = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+    return names[d.getDay()];
   }
 
-  const startVal = document.getElementById("startDate").value;
-  const endVal = document.getElementById("endDate").value;
-  if (endVal < startVal) {
-      alert("❌ تاريخ النهاية لا يمكن أن يكون قبل البداية");
-      return;
-  }
+  document.getElementById("startDate").addEventListener("change", function(){
+    const v = this.value;
+    const dayName = computeDayFromDateValue(v);
+    document.getElementById("dayDisplay").innerText = dayName ? "اليوم: " + dayName : "";
+    document.getElementById("day").value = dayName;
+  });
 
-  const d = new Date(startVal);
-  const days = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
-
-  const payload = {
-    startDate: startVal,
-    endDate: endVal,
-    startTime: document.getElementById("startTime").value,
-    endTime: document.getElementById("endTime").value,
-    day: days[d.getDay()],
-    eventName: document.getElementById("eventName").value
-  };
-
-  try {
-    await fetch(API_URL, {
-      method:"POST",
-      mode:"cors",
-      headers: {"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify(payload)
-    });
-    alert("✔ تم الحجز بنجاح");
-  } catch(err){
-    alert("خطأ بالاتصال: " + err);
-  }
-});
-
-document.getElementById("queryForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-
-  if (document.getElementById("queryCode").value !== MASTER_CODE){
-    alert("❌ رمز التحقق غير صحيح");
-    return;
-  }
-
-  const date = document.getElementById("queryDate").value;
-
-  try {
-    const res = await fetch(API_URL + "?date=" + date);
-    const data = await res.json();
-
-    let html = "<h4>نتائج البحث:</h4>";
-    if (data.length === 0){
-      html += "<p>لا توجد حجوزات لهذا التاريخ</p>";
-    } else {
-      data.forEach(r =>{
-        html += `<div style='padding:8px;border-bottom:1px solid #ccc'>
-        <b>الفعالية:</b> ${r[5]}<br>
-        <b>من:</b> ${r[0]} - ${r[2]}<br>
-        <b>إلى:</b> ${r[1]} - ${r[3]}<br>
-        <b>اليوم:</b> ${r[4]}
-        </div>`;
-      });
+  // Basic client-side validation before submitting booking form
+  document.getElementById("bookingForm").addEventListener("submit", function(e){
+    const start = document.getElementById("startDate").value;
+    const end = document.getElementById("endDate").value;
+    if(end < start){
+      e.preventDefault();
+      alert("❌ تاريخ نهاية الفعالية لا يمكن أن يكون قبل تاريخ البداية");
+      return false;
     }
-    document.getElementById("resultsBox").innerHTML = html;
+    // ensure day is set
+    if(!document.getElementById("day").value){
+      document.getElementById("day").value = computeDayFromDateValue(start);
+    }
+    // allow normal form submission (no AJAX) to the Apps Script
+    return true;
+  });
 
-  } catch(err){
-    alert("خطأ: " + err);
-  }
-});
+  // No JS needed for query form; it will open Apps Script response page with results.
 </script>
 
 </body>
