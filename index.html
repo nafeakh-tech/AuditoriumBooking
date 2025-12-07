@@ -17,7 +17,6 @@
 
 <h2>نظام حجز المدرج</h2>
 
-<!-- نموذج الحجز -->
 <form id="bookingForm">
   <label>تاريخ بداية الفعالية:</label>
   <input type="date" id="startDate" required />
@@ -41,7 +40,6 @@
   <button type="submit">تنفيذ الحجز</button>
 </form>
 
-<!-- نموذج الاستعلام -->
 <form id="queryForm">
   <h3>استعلام عن الحجوزات</h3>
 
@@ -58,7 +56,7 @@
 
 <script>
 const MASTER_CODE = "12345"; 
-const API_URL = "https://script.google.com/macros/s/AKfycbzEnAarDujvXt7VnrDkSUMsvOTZwkrq0w2egnE5Cvq4FyhOGXOzJG2cX8t4FPKFgcqD/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbzjRYdhdQDQJUipO8XXSMT91moGXL_xchoMZef_ud-H8ckOuV4iKqpew63WrGm0D2jQ/exec";
 
 document.getElementById("startDate").addEventListener("change", () => {
     const d = new Date(document.getElementById("startDate").value);
@@ -96,8 +94,9 @@ document.getElementById("bookingForm").addEventListener("submit", async (e) => {
   try {
     await fetch(API_URL, {
       method:"POST",
-      body: JSON.stringify(payload),
-      headers: {"Content-Type":"application/json"}
+      mode:"cors",
+      headers: {"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
     });
     alert("✔ تم الحجز بنجاح");
   } catch(err){
