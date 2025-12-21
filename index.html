@@ -85,12 +85,22 @@ action="https://script.google.com/macros/s/AKfycbxCrxsHAAPcTiRNiKSrqDaeXbUjVYr6r
 </div>
 
 <div class="card">
-<h3 style="text-align:center">الاستعلام عن الحجوزات</h3>
+  <h3 style="text-align:center">عرض الحجوزات حسب الفترة</h3>
 
-<a href="https://script.google.com/macros/s/AKfycbxCrxsHAAPcTiRNiKSrqDaeXbUjVYr6rhKR7ro6xVdGx1qqftgWfa0yzUZMd68NEkgJ/exec?page=calendar"
-target="_blank">
-عرض تقويم الحجوزات
-</a>
+  <form method="get"
+    action="https://script.google.com/macros/s/AKfycbyZ_LXDt-G6cidQ7vvIireyJozXnfF7BrxtDxeM8AD_2HH0yRehxCSC_LeajFqgCyP9/exec"
+    target="_blank">
+
+    <input type="hidden" name="page" value="range">
+
+    <label>من تاريخ</label>
+    <input type="date" name="from" required>
+
+    <label>إلى تاريخ</label>
+    <input type="date" name="to" required>
+
+    <button type="submit">عرض الحجوزات</button>
+  </form>
 </div>
 
 <scr
